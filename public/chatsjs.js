@@ -5,6 +5,16 @@ const { username, chatroomselect } = Qs.parse(location.search, {
     ignoreQueryPrefix: true,
 });
 
+$(document).ready(function() {
+    if (chatroomselect === "1") {
+        UserchatRoom = 'Master Minds';
+    } else {
+        UserchatRoom = 'Secret Society';
+    }
+    document.getElementById('chatroomname').innerHTML = `${UserchatRoom} Chat Room`;
+});
+
+
 //emit the chatRoom event
 socket.emit('chatRoom', { username, chatroomselect });
 
@@ -30,7 +40,6 @@ function SendAMessage() {
 
     document.getElementById('txtMessage').value = ''; // clear input box
     SaveMessageInDB(chatMessage); // save to database
-
 }
 
 //function for saving to the database
@@ -52,6 +61,8 @@ function ShowNewMessage(chatObj) {
             <h6><b>${chatObj.UserName}:</b> ${chatObj.ChatMessage}</h6>
         </div>
     </div>`);
+    document.getElementById('strInputBox').innerHTML = '';
+    getMessages();
 }
 
 //function for logging a user out or disconnecting the user
@@ -63,21 +74,13 @@ function LogUserOut() {
 function getMessages() {
     $.get('/chats', (chats) => {
         chats.forEach(WriteToTextFile);
-    })
+    });
 }
 
 //function for wring the messages in the chat room to the inputbox for later access  by the chat log download
 function WriteToTextFile(obj) {
-    var UserchatRoom = '';
-    if (chatroomselect === "1") {
-        UserchatRoom = 'Master Minds';
-    } else {
-        UserchatRoom = 'Secret Society';
-    }
-    if (obj.ChatRoom !== UserchatRoom) {} else {
-        console.log(obj);
-        $('#strInputBox').append(` ${obj.name}: ${obj.name} ` + "<br>");
-    }
+    //$('#strInputBox').append(` ${obj.name}: ${obj.chat} `);
+    document.getElementById('strInputBox').value += ` ${obj.name}: ${obj.chat} `;
 }
 
 //function for downloading the file
@@ -94,14 +97,8 @@ function download(filename, text) {
 
 //function for downloading the chat log
 function DownloadChat() {
-    getMessages();
-
     var getData = document.getElementById('strInputBox').value;
-    console.log(getData);
-
     var text = getData;
     var filename = "chatlog.txt";
-
     download(filename, text);
-
 }
